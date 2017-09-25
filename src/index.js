@@ -1,8 +1,8 @@
 'use strict';
 /* eslint indent: [error, 4] */
 
-const Promise = require('bluebird');
 const MongoClient = require('mongodb');
+const { promisify } = require('util');
 
 function defaultSerializeFunction(session) {
     // Copy each property of the session to a new object
@@ -150,11 +150,10 @@ module.exports = function connectMongo(connect) {
             this.collectionReadyPromise = undefined;
             this.collection = collection;
 
-            // Promisify used collection methods
             ['count', 'findOne', 'remove', 'drop', 'ensureIndex'].forEach(method => {
-                collection[method + 'Async'] = Promise.promisify(collection[method], { context: collection });
+                collection[method + 'Async'] = promisify(collection[method], { context: collection });
             });
-            collection.updateAsync = Promise.promisify(collection.update, { context: collection, multiArgs: true });
+            collection.updateAsync = promisify(collection.update, { context: collection, multiArgs: true });
 
             return this;
         }
